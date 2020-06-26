@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Socket.io Demo</title>
+
+        <style>
+            
+            html, body {height: 90%; background-color:#5D6D7E ;}
+           
+            .input { border: 0; padding: 10px}
+            .button { background: #F4D03F; border: none; padding: 10px}
+            #messages { list-style-type: none; margin: 0; padding: 0; }
+            #messages li { padding: 5px 10px; }
+            #messages li:nth-child(odd) { background: #eee; }
+            
+            .username-form{position: absolute;top: 45%;left: 45%;}
+            .side-bar{height: 50%; width: 10%; float: right; background-color: cornsilk; }
+            .rooms_container{margin-top: 20%;}
+            
+        </style>
+
+    </head>
+    <body>
+            
+
+            <div class="side-bar">
+                <div class="rooms_container">
+                    <h3>Rooms</h3>
+                    <ul>
+                        
+                        <li><a href="\#" onclick="select_room(this)">Room1</a></li>
+                        <li><a href="\#" onclick="select_room(this)">Room2</a></li>
+                
+                    </ul>
+                </div>
+                <div class="users_container">
+                    <h3>Users</h3>
+                    <ul id="users_list" class="users_list"></ul>
+                </div>
+            </div>
+
+
+
+        <form class="chat-form" method="POST" >
+            <div >
+                Hey there, <strong id="username" value = <%= username %> ><%= username %></strong>
+                <label>Message: </label><br />
+                <input id="message"></textarea>
+                <button type="submit" value="Send" id="send_chat" name="send_chat">Send </button>
+            </div>
+
+            <ul id="messages">
+            </ul>
+
+            <!--            <label>To:</label> <input id="recipient" /><br />-->
+
+            
+        </form>
+
+        <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+
+        
+        <script>
+            
+            var socket = io();
+            
+            var chat_form = $(".chat-form");
+            console.log('*******************');
+            //$(".chat-form").find("strong").text('asdasd')
+            var username = $(".chat-form").find("strong").text();
+
+            socket.emit('user-info',{'username': username });
+                
+    
+            socket.on('users_list', function (user_data) {
+                    console.log('users_list user_data: ', user_data.users);
+                    $("#users_list").empty();
+                    for (var i in user_data.users) {
+                        if (username != user_data.users[i].username) {
+                            $('#users_list').append('<li><a href=\"#\" onclick="select_user(this)">' + user_data.users[i].username + '</a></li>');
+                            console.log('username ' + user_data.users[i].username);
+                        }
+                        
+                        
+                        else {
+                           
+                            sessionStorage.selected_user = '';
+                            sessionStorage.selected_room = '';
+                        }
+                    }
+                    //$('#users_list').append($('<li>').text(users));
+                });
+
+
+
+
+            
+            console.log('sessionStorage11 : ', sessionStorage.selected_user);
+            console.log('sessionStorage11 : ', sessionStorage.selected_room);
+            
+            
+         
+           
+            var chat_form = $(".chat-form");
+
+            chat_form.on("submit", function () {
+            // Retrieve
+            var receiver = sessionStorage.selected_user;
+            var room = sessionStorage.selected_room;
+            console.log('receiver sessionStorage ', receiver);
+
+            //Check If user selected to send chat
+
+            if (receiver) {
+                // Send the message to the server
+                console.log('receiver in');
+                socket.emit("private-message", {
+                    "username": receiver,
+                    "content": $(this).find("input").val(),
+                    "sender": $('#username').text()
+                });
+            }
+            else if(room){
+                
+                socket.emit("room-message",{
+                    "username": room,
+                    "content": $(this).find("input").val(),
+                    "sender": $('#username').text()
+
+                });
+            }
+            
+            else
+             {
+                console.log('Broadcast in')
+                socket.emit("broadcast-message", {
+                    "username": "broadcast",
+                    "content": $(this).find("input").val(),
+                    "sender": $('#username').text()
+                });
+
+            }
+            // Empty the form
+          
+            $(this).find("input:first, input").val('');
+            return false;
+            });
+
+            
+            socket.on("add-message", function (data) {
+                console.log('add-message', data);
+                $("#messages").append('<li>' + data.sender + ': ' + data.content + '</li>');
+            });
+
+
+
+            
+            
+
+            // Whenever we receieve a message, append it to the <ul>
+         
+
+            
+
+            
+
+            function select_user(ele) {
+                //console.log(ele.innerHTML);
+                // Store sessionStorage
+                console.log('user clicked');
+                if (typeof (Storage) !== "undefined") {
+                    // Code for localStorage/sessionStorage.
+                    sessionStorage.selected_user = ele.innerHTML;
+                    sessionStorage.selected_room = '';
+                } else {
+                    console.log('Sorry! No Web Storage support..');
+                }
+
+            }
+
+            function select_room(ele) {
+                //console.log(ele.innerHTML);
+                // Store sessionStorage
+                socket.emit('join-room',{'username': ele.innerHTML});
+                console.log('roomm clicked');
+                if (typeof (Storage) !== "undefined") {
+                    // Code for localStorage/sessionStorage.
+                    sessionStorage.selected_room = ele.innerHTML;
+                    sessionStorage.selected_user = '';
+                    
+                  
+                   
+                } else {
+                    console.log('Sorry! No Web Storage support..');
+                }
+
+            }
+
+            
+        </script>
+    </body>
+</html>
+
