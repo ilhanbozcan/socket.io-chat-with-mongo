@@ -63,6 +63,8 @@
 
         
         <script>
+           sessionStorage.selected_user = ""
+           sessionStorage.selected_room = ""
             
             var socket = io();
             
@@ -83,12 +85,6 @@
                             console.log('username ' + user_data.users[i].username);
                         }
                         
-                        
-                        else {
-                           
-                            sessionStorage.selected_user = '';
-                            sessionStorage.selected_room = '';
-                        }
                     }
                     //$('#users_list').append($('<li>').text(users));
                 });
@@ -174,6 +170,8 @@
                     // Code for localStorage/sessionStorage.
                     sessionStorage.selected_user = ele.innerHTML;
                     sessionStorage.selected_room = '';
+                    console.log('sessionStorage11 : ', sessionStorage.selected_user);
+                    console.log('sessionStorage11 : ', sessionStorage.selected_room);
                 } else {
                     console.log('Sorry! No Web Storage support..');
                 }
@@ -183,14 +181,19 @@
             function select_room(ele) {
                 //console.log(ele.innerHTML);
                 // Store sessionStorage
-                socket.emit('join-room',{'username': ele.innerHTML});
+                
+
                 console.log('roomm clicked');
                 if (typeof (Storage) !== "undefined") {
+                    
                     // Code for localStorage/sessionStorage.
                     sessionStorage.selected_room = ele.innerHTML;
                     sessionStorage.selected_user = '';
+                    console.log('sessionStorage11 : ', sessionStorage.selected_user);
+                    console.log('sessionStorage11 : ', sessionStorage.selected_room);
+
+                    socket.emit('join-room',sessionStorage.selected_room);
                     
-                  
                    
                 } else {
                     console.log('Sorry! No Web Storage support..');

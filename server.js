@@ -38,6 +38,7 @@ var http = require('http');
 const { Session } = require('inspector');
 const router = require('./routes/indexRouter');
 const { type } = require('os');
+const { PassThrough } = require('stream');
 
 var server = http.createServer(app);
 
@@ -89,21 +90,27 @@ io.sockets.on('connection', function (socket) {
                     console.log('++++++++++++++++');
                     //console.log(typeof(clients[i]._id));
                     //console.log(typeof(senderUser[0]._id));
+                    var message = new Message();
+                    message.receiverID = clients[i]._id;
+                    message.senderID = senderUser[0]._id;
+                    message.message = data.content;
+                    var today = new Date();
+                    var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+                    var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+                    var dateTime = date+' '+time;
+                    message.time_stamp = dateTime;
+                    message.type = 'broadcast';
 
-                    if(clients[i]._id.equals(senderUser[0]._id)){
-
-                    }
-                    else{
-                        var message = new Message();
-                        message.senderID = senderUser[0]._id;
-                        message.receiverID = clients[i]._id;
-                        message.message = data.content;
-                        message.time_stamp = new Date().toUTCString();
-                        message.type = 'broadcast';
+                    if(clients.length == 1){
+                        message.receiverID = null;
                         message.save();
 
                     }
-                   
+                    else if(!(clients[i]._id.equals(senderUser[0]._id))){ // block self add 
+                        message.save();
+                    
+                    }
+
                 }
                 
     
@@ -123,11 +130,15 @@ io.sockets.on('connection', function (socket) {
         users.find({ 'username': data.sender}, function (err, senderUser) {
             message.senderID = senderUser[0]._id;
             users.find({ 'username': data.username }, function (err, receiverUser) {
-                 message.receiverID = receiverUser[0]._id;
-                 message.message = data.content;
-                 message.time_stamp = new Date().toUTCString();
-                 message.type = 'private';
-                 message.save();
+                message.receiverID = receiverUser[0]._id;
+                message.message = data.content;
+                var today = new Date();
+                var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+                var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+                var dateTime = date+' '+time;
+                message.time_stamp = dateTime;
+                message.type = 'private';
+                message.save();
                 });
 
                 
@@ -164,8 +175,12 @@ io.sockets.on('connection', function (socket) {
 
     });
 
-    socket.on('join-room', function(data){
-        socket.join(data.username);
+
+    socket.on('join-room', function(room){
+        //console.log('44444444444444');
+        //console.log(data.username);
+        socket.leaveAll();
+        socket.join(room);
     });
 
 
@@ -181,8 +196,7 @@ io.sockets.on('connection', function (socket) {
                     console.log(clients[i]);
                     console.log('**************************')
 
-                    
-                    
+
 
                     if(clients.length == 1){
                         Room.find(({ "name": data.username}), function (err, rooms) {
@@ -192,7 +206,11 @@ io.sockets.on('connection', function (socket) {
                                     message.senderID = senderUser[0]._id;
                                     message.receiverID = null;
                                     message.message = data.content;
-                                    message.time_stamp = new Date().toUTCString();
+                                    var today = new Date();
+                                    var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+                                    var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+                                    var dateTime = date+' '+time;
+                                    message.time_stamp = dateTime;
                                     message.type = 'room';
                                     message.save();
                 
@@ -214,7 +232,11 @@ io.sockets.on('connection', function (socket) {
                                         message.senderID = senderUser[0]._id;
                                         message.receiverID = rooms[i]._id;
                                         message.message = data.content;
-                                        message.time_stamp = new Date().toUTCString();
+                                        var today = new Date();
+                                        var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+                                        var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+                                        var dateTime = date+' '+time;
+                                        message.time_stamp = dateTime;
                                         message.type = 'room';
                                         message.save();
                                     }
@@ -228,7 +250,7 @@ io.sockets.on('connection', function (socket) {
     
                 }
             });
-            
+
         });
         
         console.log('-----------------------------------------');
@@ -238,6 +260,7 @@ io.sockets.on('connection', function (socket) {
         
         console.log("Sending room : " + data.content + " to " + data.username);
         io.sockets.in(data.username).emit('add-message', data);
+
 
         
         
