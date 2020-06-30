@@ -13,6 +13,12 @@ let usersSchema = mongoose.Schema({
     },
     socketID:{
         type: String
+    },
+    longitude:{
+        type: Number
+    },
+    latitude:{
+        type: Number
     }
 
 

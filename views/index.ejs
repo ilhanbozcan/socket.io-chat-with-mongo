@@ -22,7 +22,6 @@
 
     </head>
     <body>
-            
 
             <div class="side-bar">
                 <div class="rooms_container">
@@ -38,9 +37,13 @@
                     <h3>Users</h3>
                     <ul id="users_list" class="users_list"></ul>
                 </div>
+
+                <div class="location_room_container">
+                    <h3>location Rooms</h3>
+                    <ul id="location_room_list"></ul>
+                </div>
+                
             </div>
-
-
 
         <form class="chat-form" method="POST" >
             <div >
@@ -63,6 +66,10 @@
 
         
         <script>
+            
+           
+
+
            sessionStorage.selected_user = ""
            sessionStorage.selected_room = ""
             
@@ -70,12 +77,17 @@
             
             var chat_form = $(".chat-form");
             console.log('*******************');
+           
             //$(".chat-form").find("strong").text('asdasd')
             var username = $(".chat-form").find("strong").text();
+            navigator.geolocation.getCurrentPosition(function(position){
+                console.log(position.coords.longitude);
+                console.log(position.coords.latitude);
 
-            socket.emit('user-info',{'username': username });
-                
-    
+                socket.emit('user-info',{'username': username, 'longitude': position.coords.longitude, 'latitude' : position.coords.latitude });
+            });
+
+
             socket.on('users_list', function (user_data) {
                     console.log('users_list user_data: ', user_data.users);
                     $("#users_list").empty();
@@ -87,12 +99,21 @@
                         
                     }
                     //$('#users_list').append($('<li>').text(users));
-                });
+            });
+
+            socket.on('location_room_list', function (location_rooms) {
+                    console.log('location_rooms ', location_rooms.rooms);
+                    $("#location_room_list").empty();
+                    for (var i in location_rooms.rooms) {
+                        
+                        $('#location_room_list').append('<li><a href=\"#\" onclick="select_location_room(this)">' + location_rooms.rooms[i].name + '</a></li>');
+                        console.log('username ' + location_rooms.rooms[i].name);
+                    
+                    }
+                    //$('#users_list').append($('<li>').text(users));
+            });
 
 
-
-
-            
             console.log('sessionStorage11 : ', sessionStorage.selected_user);
             console.log('sessionStorage11 : ', sessionStorage.selected_room);
             
@@ -178,6 +199,7 @@
 
             }
 
+
             function select_room(ele) {
                 //console.log(ele.innerHTML);
                 // Store sessionStorage
@@ -195,6 +217,26 @@
                     socket.emit('join-room',sessionStorage.selected_room);
                     
                    
+                } else {
+                    console.log('Sorry! No Web Storage support..');
+                }
+
+            }
+
+            function select_location_room(ele) {
+                //console.log(ele.innerHTML);
+                // Store sessionStorage
+                console.log('roomm clicked');
+                if (typeof (Storage) !== "undefined") {
+                    
+                    // Code for localStorage/sessionStorage.
+                    sessionStorage.selected_room = ele.innerHTML;
+                    sessionStorage.selected_user = '';
+                    console.log('sessionStorage11 : ', sessionStorage.selected_user);
+                    console.log('sessionStorage11 : ', sessionStorage.selected_room);
+
+                    socket.emit('join-room',sessionStorage.selected_room);
+
                 } else {
                     console.log('Sorry! No Web Storage support..');
                 }

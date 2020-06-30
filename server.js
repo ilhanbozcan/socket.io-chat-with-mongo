@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const path = require('path');
 const port = process.env.port || 3000;
 const indexRouter = require('./routes/indexRouter');
+const adminRouter = require('./routes/adminRouter');
 
 app.use(bodyParser.urlencoded({extended: false}));
 const session = require('express-session');
@@ -13,6 +14,7 @@ const session = require('express-session');
 const users = require('./models/users.js');
 const Message = require('./models/messages.js');
 const Room = require('./models/rooms.js');
+const LocationRooms = require('./models/location_rooms.js');
 
 
 app.use(
@@ -45,9 +47,8 @@ var server = http.createServer(app);
 var io = require('socket.io').listen(server);
 
 
-
 app.use('/', indexRouter);
-
+app.use('/admin', adminRouter);
 
 server.listen('3000', () => {
     console.log('Server listening on Port 3000');
@@ -62,28 +63,29 @@ server.listen('3000', () => {
 });
 
 
-
 io.sockets.on('connection', function (socket) {
-    socket.on('user-info',function(data){
 
-        users.findOneAndUpdate({'username':data.username},{'socketID': socket.id},{returnNewDocument: true},function (err, existUser) {
+    
+
+
+    socket.on('user-info',function(data){
+        console.log(data.longitude);
+        console.log(data.latitude);
+
+        users.update({'username':data.username},{'socketID': socket.id,'longitude': data.longitude, 'latitude':data.latitude},{returnNewDocument: true},function (err, existUser) {
             if(err){
                 console.log(err);
             }else{
+                update_location_rooms();
                 update_users();
                 
             }
         });
 
     });
-    
-      
-    
 
     socket.on('broadcast-message', function (data) {
         
-        
-
         users.find(({ "socketID": { "$ne": null } }), function (err, clients) {
             users.find({ 'username': data.sender}, function (err, senderUser) {
                 for(var i in clients ){
@@ -279,6 +281,38 @@ io.sockets.on('connection', function (socket) {
         
     })
 
+    function update_location_rooms() {
+        console.log(' function in');
+        var Rooms = [];
+        users.find(({ "socketID": socket.id}), function (err, existUser) {
+            console.log(existUser)
+
+            LocationRooms.find(function(err, rooms) {
+                console.log(rooms)
+
+                rooms.forEach(room => {
+                    console.log(room);
+                    if(((existUser[0].latitude) >= room.latitude - 0.005) && ((existUser[0].latitude) <= room.latitude + 0.005)){
+                        console.log('first if in');
+                        if(((existUser[0].longitude) >= room.longitude - 0.005) && ((existUser[0].longitude) <= room.longitude + 0.005)){
+                            console.log('second if in');
+                            Rooms.push(room);
+                            
+                        }
+            
+                    }
+
+
+                });
+                console.log('Rooms : ' +Rooms);
+                io.emit('location_room_list', {'rooms': Rooms});
+
+            });
+            
+        });
+        
+    }
+
    
 
 });
@@ -289,4 +323,5 @@ function update_users() {
         io.emit('users_list', {'users': existUser });
     });
 }
+
 

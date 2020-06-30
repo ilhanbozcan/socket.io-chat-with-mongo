@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/chatDB');
 
 const users = require('../models/users.js');
-
 const express = require('express');
 
 
@@ -55,8 +54,6 @@ module.exports.indexPageGet = function (req, res) {
 
 
 
-
-
 module.exports.loginPagePost = function (req, res) {
     
    // console.log('username ' +req.body.username);
@@ -82,6 +79,8 @@ module.exports.registerPagePost = function (req, res) {
     let user = new users();
     user.username = req.body.username;
     user.password = req.body.password;
+    user.longitude = null;
+    user.latitude = null;
     user.socketID = null;
     users.find({ 'username': req.body.username }, function (err, existUser) {
         //console.log(existUser.length);
