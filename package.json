@@ -19,10 +19,13 @@
     "websocket": "^1.0.31",
     "ws": "^7.3.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^8.0.1",
+    "supertest": "^4.0.2"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "test": "mocha 'test/**/*.js' --recursive  --exit --timeout 50000"
   },
   "repository": {
     "type": "git",

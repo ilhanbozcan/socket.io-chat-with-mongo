@@ -20,8 +20,7 @@ let usersSchema = mongoose.Schema({
     latitude:{
         type: Number
     }
-
-
+    
 });
 
 let users = module.exports = mongoose.model('users',usersSchema);

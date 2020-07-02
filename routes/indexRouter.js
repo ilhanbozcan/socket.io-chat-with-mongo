@@ -10,11 +10,23 @@ var io = require('socket.io').listen(server);
 
 
 
+const redirectLoign = function(req,res,next){
+    if(req.session.username){
+        next();
+    }
+    else{
+        res.redirect('/login')
+    }
+
+};
+
+
+
 
   
 router
 .route('/')
-.get(userController.indexPageGet);
+.get(redirectLoign,userController.indexPageGet);
 
 
 

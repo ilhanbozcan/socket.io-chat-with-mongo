@@ -50,6 +50,8 @@ var io = require('socket.io').listen(server);
 app.use('/', indexRouter);
 app.use('/admin', adminRouter);
 
+
+
 server.listen('3000', () => {
     console.log('Server listening on Port 3000');
   })
@@ -177,15 +179,13 @@ io.sockets.on('connection', function (socket) {
 
     });
 
-
     socket.on('join-room', function(room){
         //console.log('44444444444444');
         //console.log(data.username);
         socket.leaveAll();
         socket.join(room);
     });
-
-
+    
     socket.on('room-message', function (data) {
         console.log('-----------------------------------------');
         users.find({ 'username': data.sender}, function (err, senderUser) {
@@ -197,9 +197,6 @@ io.sockets.on('connection', function (socket) {
                 for (var i in clients){
                     console.log(clients[i]);
                     console.log('**************************')
-
-
-
                     if(clients.length == 1){
                         Room.find(({ "name": data.username}), function (err, rooms) {
                             users.find({ 'username': data.sender}, function (err, senderUser) {
@@ -221,11 +218,8 @@ io.sockets.on('connection', function (socket) {
                             });
                 
                         });
-
                     }
-
                     else{
-                        
                         if(clients[i] != senderUser[0].socketID){
                             Room.find(({ "name": data.username}), function (err, rooms) {
                                 users.find({ 'username': data.sender}, function (err, senderUser) {
@@ -246,7 +240,6 @@ io.sockets.on('connection', function (socket) {
                                 });
                     
                             });
-                        
                         }
                     }
     
@@ -257,16 +250,80 @@ io.sockets.on('connection', function (socket) {
         
         console.log('-----------------------------------------');
         //users.find(({ "socketID": { "$ne": null } }), function (err, existUser) {
-
-
-        
         console.log("Sending room : " + data.content + " to " + data.username);
         io.sockets.in(data.username).emit('add-message', data);
 
-
-        
-        
     });
+
+    socket.on('location-room-message', function (data) {
+        console.log('-----------------------------------------');
+        users.find({ 'username': data.sender}, function (err, senderUser) {
+            io.of('/').in(data.username).clients((error, clients) => {
+                //clients = sockets
+                console.log(typeof(clients[0]));
+                console.log(typeof(senderUser[0].socketID));
+                
+                for (var i in clients){
+                    console.log(clients[i]);
+                    console.log('**************************')
+                    if(clients.length == 1){
+                        LocationRooms.find(({ "name": data.username}), function (err, rooms) {
+                            users.find({ 'username': data.sender}, function (err, senderUser) {
+                                for(var i in rooms ){
+                                    var message = new Message();
+                                    message.senderID = senderUser[0]._id;
+                                    message.receiverID = null;
+                                    message.message = data.content;
+                                    var today = new Date();
+                                    var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+                                    var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+                                    var dateTime = date+' '+time;
+                                    message.time_stamp = dateTime;
+                                    message.type = 'location_room';
+                                    message.save();
+                
+                                }
+                                
+                            });
+                
+                        });
+                    }
+                    else{
+                        if(clients[i] != senderUser[0].socketID){
+                            LocationRooms.find(({ "name": data.username}), function (err, rooms) {
+                                users.find({ 'username': data.sender}, function (err, senderUser) {
+                                    for(var i in rooms ){
+                                        var message = new Message();
+                                        message.senderID = senderUser[0]._id;
+                                        message.receiverID = rooms[i]._id;
+                                        message.message = data.content;
+                                        var today = new Date();
+                                        var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+                                        var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+                                        var dateTime = date+' '+time;
+                                        message.time_stamp = dateTime;
+                                        message.type = 'location_room';
+                                        message.save();
+                                    }
+                                    
+                                });
+                    
+                            });
+                        }
+                    }
+    
+                }
+            });
+
+        });
+        
+        console.log('-----------------------------------------');
+        //users.find(({ "socketID": { "$ne": null } }), function (err, existUser) {
+        console.log("Sending room : " + data.content + " to " + data.username);
+        io.sockets.in(data.username).emit('add-message', data);
+
+    });
+
     socket.on('disconnect', function () {
         users.findOneAndUpdate({'socketID':socket.id},{'socketID': null},{returnNewDocument: true},function (err, existUser) {
             if(err){
@@ -325,3 +382,4 @@ function update_users() {
 }
 
 
+module.exports = app;

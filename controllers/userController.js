@@ -9,9 +9,7 @@ const express = require('express');
 
 
 
-var username;
-var id;
-var clients;
+
 
 let db = mongoose.connection;
 
@@ -69,6 +67,7 @@ module.exports.loginPagePost = function (req, res) {
         }
         else {
             console.log('There is no user');
+            res.redirect('/login');
         }
     });
 };

@@ -126,6 +126,7 @@
             // Retrieve
             var receiver = sessionStorage.selected_user;
             var room = sessionStorage.selected_room;
+            var location_room = sessionStorage.selected_location_room;
             console.log('receiver sessionStorage ', receiver);
 
             //Check If user selected to send chat
@@ -147,6 +148,15 @@
                     "sender": $('#username').text()
 
                 });
+            }
+            else if(location_room){
+                socket.emit("location-room-message",{
+                    "username": location_room,
+                    "content": $(this).find("input").val(),
+                    "sender": $('#username').text()
+
+                });
+
             }
             
             else
@@ -171,18 +181,6 @@
                 $("#messages").append('<li>' + data.sender + ': ' + data.content + '</li>');
             });
 
-
-
-            
-            
-
-            // Whenever we receieve a message, append it to the <ul>
-         
-
-            
-
-            
-
             function select_user(ele) {
                 //console.log(ele.innerHTML);
                 // Store sessionStorage
@@ -191,6 +189,7 @@
                     // Code for localStorage/sessionStorage.
                     sessionStorage.selected_user = ele.innerHTML;
                     sessionStorage.selected_room = '';
+                    sessionStorage.selected_location_room = '';
                     console.log('sessionStorage11 : ', sessionStorage.selected_user);
                     console.log('sessionStorage11 : ', sessionStorage.selected_room);
                 } else {
@@ -199,18 +198,17 @@
 
             }
 
-
             function select_room(ele) {
                 //console.log(ele.innerHTML);
                 // Store sessionStorage
                 
-
                 console.log('roomm clicked');
                 if (typeof (Storage) !== "undefined") {
                     
                     // Code for localStorage/sessionStorage.
                     sessionStorage.selected_room = ele.innerHTML;
                     sessionStorage.selected_user = '';
+                    sessionStorage.selected_location_room = '';
                     console.log('sessionStorage11 : ', sessionStorage.selected_user);
                     console.log('sessionStorage11 : ', sessionStorage.selected_room);
 
@@ -226,17 +224,15 @@
             function select_location_room(ele) {
                 //console.log(ele.innerHTML);
                 // Store sessionStorage
-                console.log('roomm clicked');
+                console.log('location roomm clicked');
                 if (typeof (Storage) !== "undefined") {
                     
                     // Code for localStorage/sessionStorage.
-                    sessionStorage.selected_room = ele.innerHTML;
                     sessionStorage.selected_user = '';
-                    console.log('sessionStorage11 : ', sessionStorage.selected_user);
-                    console.log('sessionStorage11 : ', sessionStorage.selected_room);
-
-                    socket.emit('join-room',sessionStorage.selected_room);
-
+                    sessionStorage.selected_room ='' ;
+                    sessionStorage.selected_location_room = ele.innerHTML;
+                    socket.emit('join-room',sessionStorage.selected_location_room);
+                    
                 } else {
                     console.log('Sorry! No Web Storage support..');
                 }
