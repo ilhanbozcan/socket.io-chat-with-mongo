@@ -15,7 +15,7 @@ let db = mongoose.connection;
 
 //Check connection
 db.once('open', function () {
-    console.log('Connected');
+    //console.log('Connected');
 })
 
 
@@ -51,7 +51,6 @@ module.exports.indexPageGet = function (req, res) {
 
 
 
-
 module.exports.loginPagePost = function (req, res) {
     
    // console.log('username ' +req.body.username);
@@ -61,8 +60,7 @@ module.exports.loginPagePost = function (req, res) {
 
             req.session.username = req.body.username;
             //console.log('login posted');
-            console.log('-----------');
-            console.log('-----------');
+            
             res.redirect('/');
         }
         else {
@@ -71,7 +69,6 @@ module.exports.loginPagePost = function (req, res) {
         }
     });
 };
-
 
 
 module.exports.registerPagePost = function (req, res) {

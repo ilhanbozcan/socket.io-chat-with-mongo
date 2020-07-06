@@ -5,8 +5,9 @@ const User = require('../models/users.js');
 
 
 
+
 describe('Login Page test', function () {
-    it('load  page',function(done){
+    it('load page',function(done){
         request(app).get('/login')
         .expect(200,done)
     });
@@ -26,16 +27,15 @@ describe('User', function () {
         it('should redirect to /', function (done) {
           agent
           .post('/login')
-          .field('username', 'test')
-          .field('password', 'test')
+          .send({username : "test", password: "test"})
           .expect('Location','/')
           .end(done)
         })
   
     after(function(done) {
-        User.remove().exec();
+        User.deleteOne({_id : user._id}).exec();
         return done();
-      });
+      }); 
   
   })
   })
