@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/chatDB');
+mongoose.connect('mongodb+srv://root:root@cluster0-ydxlx.mongodb.net/chat-database?retryWrites=true&w=majority',{useUnifiedTopology: true, useNewUrlParser: true});
 
 
 const Admins = require('../models/users.js');

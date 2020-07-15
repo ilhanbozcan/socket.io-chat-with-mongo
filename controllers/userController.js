@@ -1,6 +1,6 @@
 const path = require('path');
 const mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/chatDB');
+mongoose.connect('mongodb+srv://root:root@cluster0-ydxlx.mongodb.net/chat-database?retryWrites=true&w=majority',{useUnifiedTopology: true, useNewUrlParser: true});
 
 const users = require('../models/users.js');
 const express = require('express');
@@ -20,7 +20,7 @@ db.once('open', function () {
 
 
 //check db
-db.on('error', function () {
+db.on('error', function (err) {
     console.log(err);
 });
 
