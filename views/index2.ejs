@@ -1,0 +1,226 @@
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+<link rel="stylesheet" href="/styles.css">
+<div class="container bootstrap snippets bootdeys">
+<div class="row">
+    <div class="col-md-12">
+        <!-- start:chat room -->
+        <div class="box">
+            <div class="chat-room">
+            <!-- start:aside kiri chat room -->
+            <aside class="kiri-side">
+                <div class="user-head">
+                    <i class="fa fa-comments-o"></i>
+                    <h3>Color Chat</h3>
+                </div>
+                <div style="border-bottom: 1px solid #3498db;" class="invite-row">
+                    <h4  class="pull-left">Nearest rooms</h4>
+                </div>
+                <ul class="room-list">
+                   
+                </ul>
+                
+                <footer>
+                    <a class="chat-avatar" href="#javascript:;">
+                        <img alt="" src="http://bootemplates.com/themes/kentut/assets/img/avatar/avatar-19.jpg">
+                    </a>
+                    <div class="user-status">
+                        <i class="fa fa-circle text-success"></i>
+                        Available
+                    </div>
+                    <a class="chat-dropdown pull-right" href="#javascript:;">
+                        <i class="fa fa-chevron-down"></i>
+                    </a>
+                </footer>
+            </aside>
+            <!-- end:aside kiri chat room -->
+
+            <!-- start:aside tengah chat room -->
+            <aside class="tengah-side">
+                
+                <div class="chat-room-head">
+                    <h3>Air Koler</h3>
+                    <form action="#" class="pull-right position">
+                        <input type="text" placeholder="Search" class="form-control search-btn ">
+                    </form>
+                </div>
+                <div id="messages">
+               
+                 
+                </div>
+                
+                <footer>
+                    
+                        <div class="chat-txt">
+                            <input id="message_input" type="text" class="form-control">
+                        </div>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-white" data-original-title="" title=""><i class="fa fa-meh-o"></i></button>
+                            <button type="button" class="btn btn-white" data-original-title="" title=""><i class=" fa fa-paperclip"></i></button>
+                        </div>
+                        <button  class="btn btn-danger" id="send_btn" data-original-title="" title="">Send</button>
+                    
+                </footer>
+            </aside>
+            <!-- end:aside tengah chat room -->
+
+            <!-- start:aside kanan chat room -->
+            <aside class="kanan-side">
+                <div class="user-head">
+                    <a href="##" class="chat-tools btn-success"><i class="fa fa-cog"></i> </a>
+                    <a href="##" class="chat-tools btn-key"><i class="fa fa-key"></i> </a>
+                </div>
+                <div class="invite-row">
+                    <h4 class="pull-left">People</h4>
+                </div>
+                <ul class="chat-available-user">
+                    <li>
+                        <a href="#chat-room.html">
+                            <i class="fa fa-circle text-success"></i>
+                            İlhan Bozcan
+                        </a>
+                    </li>
+                    
+                </ul>
+                
+                <footer>
+                    <a href="##" class="guest-on">
+                        <i class="fa fa-check"></i>
+                        Guest Access On
+                    </a>
+                </footer>
+            </aside>
+            <!-- end:aside kanan chat room -->
+
+            </div>
+        </div>
+        <!-- end:chat room -->
+    </div>
+</div>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+
+
+
+<script>
+
+
+    sessionStorage.selected_user = ""
+           sessionStorage.selected_room = ""
+            
+            var socket = io();
+            
+            var send_btn= $("#send_btn");
+
+            $(document).on('keypress',function(e) {
+                if(e.which == 13) {
+                    send_btn.click();
+                }
+            });
+
+
+            //$(".chat-form").find("strong").text('asdasd')
+            var username = "<%= username %>";
+            navigator.geolocation.getCurrentPosition(function(position){
+                console.log(position.coords.longitude);
+                console.log(position.coords.latitude);
+
+                socket.emit('user-info',{'username': username, 'longitude': position.coords.longitude, 'latitude' : position.coords.latitude });
+            });
+
+            
+            socket.on('users_list', function (user_data) {
+                    console.log('users_list user_data: ', user_data.users);
+                    var sidemenu = $(".chat-available-user")[0];
+                    while (sidemenu.childNodes.length > 2) {
+                        sidemenu.removeChild(sidemenu.lastChild);
+                    }
+                    for (var i in user_data.users) {
+                        if (username != user_data.users[i].username) {
+                            $('.chat-available-user').append('<li><a href="#chat-room.html"><i class="fa fa-circle text-success"></i>'+user_data.users[i].username+'</a></li>');
+                            console.log('username ' + user_data.users[i].username);
+                        }
+                        
+                    }
+                    //$('#users_list').append($('<li>').text(users));
+            });
+            
+
+
+            socket.on('location_room_list', function (location_rooms) {
+                    console.log('location_rooms ', location_rooms.rooms);
+                    $(".room-list").empty();
+                    for (var i in location_rooms.rooms) {
+                        
+                        $('.room-list').append('<li><a href=\"#\" onclick="select_location_room(this)">' + location_rooms.rooms[i].name + '</a></li>');
+                        console.log('username ' + location_rooms.rooms[i].name);
+                    
+                    }
+                    //$('#users_list').append($('<li>').text(users));
+            });
+
+            send_btn.click(function () {
+            // Retrieve
+            var receiver = sessionStorage.selected_user;
+            var room = sessionStorage.selected_room;
+            var location_room = sessionStorage.selected_location_room;
+            console.log('receiver sessionStorage ', receiver);
+
+            //Check If user selected to send chat
+
+            if (receiver) {
+                // Send the message to the server
+                console.log('receiver in');
+                socket.emit("private-message", {
+                    "username": receiver,
+                    "content": $(this).find("input").val(),
+                    "sender": $('#username').text()
+                });
+            }
+            else if(room){
+                
+                socket.emit("room-message",{
+                    "username": room,
+                    "content": $(this).find("input").val(),
+                    "sender": $('#username').text()
+
+                });
+            }
+            else if(location_room){
+                socket.emit("location-room-message",{
+                    "username": location_room,
+                    "content": $(this).find("input").val(),
+                    "sender": $('#username').text()
+
+                });
+
+            }
+            
+            else
+             {
+                console.log('Broadcast in')
+                socket.emit("broadcast-message", {
+                    "username": "broadcast",
+                    "content": $('#message_input').val(),
+                    "sender": "<%= username %>"
+                });
+
+            }
+            // Empty the form
+          
+            $('#message_input').val('');
+            return false;
+            });
+
+            socket.on("add-message", function (data) {
+                if(data.content.replace(/<[^>]*>/g, "").length > 0){
+                    console.log('add-message', data);
+                    $("#messages").append('<div class="group-rom"><div class="first-part odd">'+data.sender.replace(/<[^>]*>/g, "")+'</div><div class="second-part">'+data.content.replace(/<[^>]*>/g, "")+'</div><div class="third-part">12:33</div></div>');
+                }
+               
+                
+            });
+   
+</script>

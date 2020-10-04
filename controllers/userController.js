@@ -44,7 +44,7 @@ module.exports.indexPageGet = function (req, res) {
 
     //console.log('username in index' + req.session.userID );
     console.log('username'+ req.session.username);
-    res.render('index.ejs',{'username': req.session.username});
+    res.render('index2.ejs',{'username': req.session.username});
     //console.log('loaded');
 
 };

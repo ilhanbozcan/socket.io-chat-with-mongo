@@ -79,7 +79,7 @@
             console.log('*******************');
            
             //$(".chat-form").find("strong").text('asdasd')
-            var username = $(".chat-form").find("strong").text();
+            var username = $(".chat-form").find("strong").value();
             navigator.geolocation.getCurrentPosition(function(position){
                 console.log(position.coords.longitude);
                 console.log(position.coords.latitude);

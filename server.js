@@ -4,12 +4,13 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 const path = require('path');
-const port = process.env.port || 3000;
+const port = process.env.port || 80;
 const indexRouter = require('./routes/indexRouter');
 const adminRouter = require('./routes/adminRouter');
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: false}));
+app.use(express.static(__dirname + '/public'));
 const session = require('express-session');
 
 const users = require('./models/users.js');
@@ -53,7 +54,7 @@ app.use('/admin', adminRouter);
 
 
 
-server.listen('3000', () => {
+server.listen(port, () => {
     console.log('Server listening on Port 3000');
   })
 
